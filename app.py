@@ -1,10 +1,10 @@
+import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+import scipy.cluster.hierarchy as shc
 from sklearn import preprocessing
 from sklearn.preprocessing import MinMaxScaler
-import numpy as np
-import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
-import scipy.cluster.hierarchy as shc
 from sklearn.cluster import AgglomerativeClustering
 
 colnames = ['surgery', 'age', 'hospital number', 'rectal temperature', 'pulse', 'respiratory rate', 'temperature of extremities', 'peripheral pulse', 'mucous membranes', 'capillary refill time', 'pain', 'peristalsis', 'abdominal distension', 'nasogastric tube',
@@ -12,7 +12,7 @@ colnames = ['surgery', 'age', 'hospital number', 'rectal temperature', 'pulse', 
 catagorical_columns = []
 numerical_columns = ['rectal temperature', 'pulse', 'respiratory rate',
                      'nasogastric reflux', 'packed cell volume', 'total protein', 'abdomcentesis total protein']
-df = pd.read_csv("Z:\Dev\Projects\Python\Data Mining\Data_Mining_Hose_Colic\data\horse-colic.data",
+df = pd.read_csv("data\horse-colic.data",
                  sep=' ', names=colnames, header=None)
 df.columns.names = ['id']
 
@@ -41,35 +41,36 @@ x = refined_df
 kmeans = KMeans(algorithm='auto', copy_x=True, init='random', max_iter=300,
                 n_clusters=3, n_init=10,
                 random_state=0, tol=0.01, verbose=0)
-
-identified_clusters = kmeans.fit_predict(x)
-
-refined_df['clusters'] = pd.Series(identified_clusters)
+clusters = kmeans.fit_predict(x)
+refined_df['clusters'] = pd.Series(clusters)
 
 n = 0
+fig = plt.figure(figsize=(16, 28))
 for col in colnames:
-    plt.title(colnames[n])
-    plt.scatter(refined_df[col], refined_df['clusters'] ,c=refined_df['clusters'],cmap='rainbow')
-    plt.figure()
-    n+=1
+    p = plt.subplot(7, 4, n + 1)
+    p.set_title(colnames[n])
+    plt.scatter(refined_df[col], refined_df['clusters'],
+                c=refined_df['clusters'], cmap='rainbow')
+    n += 1
 
 # Hieratical
 refined_df_2 = normalized_df.copy()
-plt.figure(figsize=(16, 910))
+plt.figure(figsize=(16, 16))
 plt.title("Horse Colic Dendograms")
 dend = shc.dendrogram(shc.linkage(
     refined_df_2, method='complete'), truncate_mode='lastp')
-plt.axhline(y=1, color='r', linestyle='--')
-plt.show()
+plt.ylim(0, 65000)
 
-cluster = AgglomerativeClustering(
+Aglo = AgglomerativeClustering(
     n_clusters=3, affinity='euclidean', linkage='ward')
-cluster.fit_predict(refined_df_2)
-plt.figure(figsize=(10, 7))
-m = 0
+clusters = cluster.fit_predict(refined_df_2)
+refined_df_2['clusters'] = pd.Series(clusters)
+
+n = 0
+plt.figure(figsize=(16, 28))
 for col in colnames:
-    plt.title(colnames[m])
-    plt.scatter(refined_df[col], refined_df['clusters'],
-                c=refined_df['clusters'], cmap='rainbow')
-    plt.figure()
-    m += 1
+    p = plt.subplot(7, 4, n + 1)
+    p.set_title(colnames[n])
+    plt.scatter(refined_df_2[col], refined_df_2['clusters'],
+                c=refined_df_2['clusters'], cmap='rainbow')
+    n += 1
